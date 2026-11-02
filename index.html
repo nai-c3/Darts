@@ -248,14 +248,8 @@ label.btn{display:inline-block;cursor:pointer}
 .btn.danger{background:var(--signal);color:var(--white)}
 .delrow{padding:16px 20px}
 .hint.nomt{margin-top:0}
-.gcode{background:var(--modeBg);border-radius:12px;padding:12px 16px}
-.gcode small{display:block;font-size:13px;opacity:.75}
-.code{font-family:var(--disp);font-weight:800;letter-spacing:.02em;text-transform:none}
-.gcode .code{font-size:24px}
 .gstat{margin-top:12px;font-size:15px}
 .gstat.bad{color:var(--signal)}
-.gjoin{display:flex;gap:8px;margin-top:12px}
-.gjoin .tin{flex:1;min-width:0;font-size:17px}
 .bmsg{margin-top:12px;padding:12px 16px;border-radius:8px;background:var(--sun);color:var(--midnight);font-size:15px;line-height:1.4}
 .bmsg.bad{background:var(--signal);color:var(--white)}
 /* Split Score */
@@ -445,15 +439,12 @@ function removeMatch(id){DS.matches=DS.matches.filter(function(m){return m.id!==
 /* Konfiguration aus der Firebase-Konsole hier eintragen (Projekteinstellungen, Web-App). Diese Werte sind öffentlich und dürfen im Code stehen. */
 var FIREBASE_CONFIG={apiKey:"AIzaSyBTJ9FNXncZWW6lEr_68ikUx7XMUdA8FTI",authDomain:"darts-d796d.firebaseapp.com",projectId:"darts-d796d",storageBucket:"darts-d796d.firebasestorage.app",messagingSenderId:"768481436853",appId:"1:768481436853:web:bbc54589e2e43789554afc"};
 var FB_SDK='https://www.gstatic.com/firebasejs/10.14.1/';
-var GKEY='dartzaehler-group-v1',GALPHA='23456789abcdefghjkmnpqrstuvwxyz',GLEN=4;
+/* Ein offener, gemeinsamer Bereich für alle Geräte: kein Code, kein Beitreten. */
+var GKEY='dartzaehler-group-v1',SHARED='dart';
 var FB={fs:null,db:null,unsub:[]};
 function syncReady(){return!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.projectId);}
-function getGroup(){try{var g=JSON.parse(localStorage.getItem(GKEY)||'null');return g&&normCode(g.code)?g:null;}catch(e){return null;}}
+function getGroup(){var g=null;try{g=JSON.parse(localStorage.getItem(GKEY)||'null');}catch(e){}if(!g||g.code!==SHARED){g={code:SHARED,merged:false};setGroup(g);}return g;}
 function setGroup(g){try{if(g)localStorage.setItem(GKEY,JSON.stringify(g));else localStorage.removeItem(GKEY);}catch(e){}}
-function normCode(c){c=String(c||'').toLowerCase().replace(/[^0-9a-z]/g,'');if(c.length!==GLEN&&c.length!==12)return null; /* 12 Zeichen: Gruppen aus der ersten Version */for(var i=0;i<c.length;i++)if(GALPHA.indexOf(c[i])<0)return null;return c;}
-function fmtCode(c){return(c.length===12?c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8):c).toUpperCase();}
-function newCode(){var a=new Uint32Array(GLEN),c='';crypto.getRandomValues(a);for(var i=0;i<GLEN;i++)c+=GALPHA[a[i]%GALPHA.length];return c;}
-function inviteLink(c){return location.origin+location.pathname+'#g='+c;}
 function safeRender(){var ae=document.activeElement;if(ui.screen==='edit'||(ae&&ae.tagName==='INPUT'))return;render();}
 function fbLoad(){
   if(FB.db)return Promise.resolve();
@@ -497,45 +488,10 @@ function startGroup(){
     FB.unsub.push(F.onSnapshot(mcol,{includeMetadataChanges:true},function(s){snaps.m=s;apply();},onErr));
   }).catch(function(){DS.sync='error';DS.syncErr='Die Sync-Bibliothek konnte nicht geladen werden. Bist du online?';safeRender();});
 }
-/* Neuen Code würfeln und prüfen, dass die Gruppe noch leer ist (4 Stellen können doppelt vorkommen). */
-function createGroup(){
-  ui.gmsg={ok:true,text:'Suche freien Code …'};render();
-  fbLoad().then(function(){
-    var F=FB.fs,tries=0;
-    function attempt(){
-      var c=newCode();tries++;
-      return F.getDocs(F.query(F.collection(FB.db,'groups',c,'profiles'),F.limit(1))).then(function(sn){
-        if(sn.empty||tries>=8)return c;return attempt();
-      });
-    }
-    return attempt();
-  }).then(function(c){joinGroup(c);render();},function(e){
-    ui.gmsg={ok:false,text:e&&e.code==='permission-denied'?'Zugriff verweigert. Sind die aktuellen Firestore-Regeln veröffentlicht?':'Keine Verbindung. Gruppe anlegen geht nur online.'};render();
-  });
-}
-function joinGroup(code){setGroup({code:code,merged:false});ui.invite=null;ui.gmsg=null;startGroup();}
-function leaveGroup(){fbStop();setGroup(null);ui.gmsg={ok:true,text:'Gruppe verlassen. Die Daten bleiben als Kopie auf diesem Gerät.'};}
-function renderGroupPanel(){
-  if(!syncReady())return'';
-  var g=getGroup(),h='<section class="panel"><h2>Gruppe</h2>';
-  if(ui.invite&&(!g||g.code!==ui.invite)){
-    h+='<p class="hint nomt">Einladung in die Gruppe <b class="code">'+fmtCode(ui.invite)+'</b>. Beim Beitreten kommen die Profile und Spiele von diesem Gerät mit in die Gruppe.'+(g?' Deine aktuelle Gruppe verlässt du damit.':'')+'</p>';
-    h+='<div class="btnrow"><button class="btn primary" data-action="gaccept">Beitreten</button><button class="btn" data-action="gignore">Ignorieren</button></div></section>';
-    return h;
-  }
-  if(g){
-    var st={connecting:'Verbinde …',online:'Synchronisiert',offline:'Offline, Änderungen werden später übertragen',error:DS.syncErr||'Fehler',off:'Nicht verbunden'}[DS.sync||'off'];
-    h+='<div class="gcode"><small>Gruppencode</small><b class="code">'+fmtCode(g.code)+'</b></div>';
-    h+='<p class="gstat'+(DS.sync==='error'?' bad':'')+'" role="status">'+esc(st)+'</p>';
-    h+='<div class="btnrow"><button class="btn primary" data-action="gshare">Mitspieler einladen</button><button class="btn" data-action="gleave">'+(ui.confirmLeave?'Wirklich verlassen? Nochmal tippen':'Gruppe verlassen')+'</button></div>';
-    h+='<p class="note">Alle Geräte mit diesem Code teilen Profile und Statistiken. Wer den Code kennt, kann alles sehen und ändern. Gib ihn nur an Mitspieler weiter.</p>';
-  }else{
-    h+='<p class="hint nomt">Leg eine Gruppe an, damit Profile und Statistiken auf allen Handys eurer Runde gleich sind. Oder tritt mit dem Code eines Mitspielers bei.</p>';
-    h+='<div class="btnrow"><button class="btn primary" data-action="gnew">Gruppe anlegen</button></div>';
-    h+='<div class="gjoin"><input class="tin" data-edit="gcode" placeholder="Code, z. B. AB3D" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" value="'+esc(ui.gcode||'')+'"><button class="btn" data-action="gjoin">Beitreten</button></div>';
-  }
-  if(ui.gmsg)h+='<p class="bmsg'+(ui.gmsg.ok?'':' bad')+'" role="status">'+esc(ui.gmsg.text)+'</p>';
-  return h+'</section>';
+function shareStatus(){
+  if(DS.mode!=='group')return'';
+  var st={connecting:'Verbinde …',online:'Synchronisiert',offline:'Offline, Änderungen werden später übertragen',error:DS.syncErr||'Fehler',off:'Nicht verbunden'}[DS.sync||'off'];
+  return'<p class="gstat'+(DS.sync==='error'?' bad':'')+'" role="status">'+esc(st)+'</p>';
 }
 
 /* ---------- Sichern: Export / Import ---------- */
@@ -583,7 +539,7 @@ function importData(text){
 }
 function renderBackupPanel(){
   var lb=lastBackup(),h='<section class="panel"><h2>Daten sichern</h2>';
-  h+='<p class="hint nomt">'+(DS.mode==='group'?'Die Daten liegen in der Gruppe. Eine Datei ist eine zusätzliche Sicherung, falls die Gruppe einmal gelöscht wird.':DS.mode==='db'?'Deine Daten liegen schon im Claude-Konto. Eine Datei brauchst du nur, um sie in die GitHub-Version mitzunehmen.':'Leert der Browser seine Daten, sind Profile und Statistik weg. Sichere sie ab und zu als Datei, auch um sie auf ein anderes Gerät mitzunehmen.')+'</p>';
+  h+='<p class="hint nomt">'+(DS.mode==='group'?'Die Daten liegen online und sind für alle mit dem Link offen. Jeder kann sie ändern oder löschen, also sichere sie ab und zu als Datei.':DS.mode==='db'?'Deine Daten liegen schon im Claude-Konto. Eine Datei brauchst du nur, um sie in die GitHub-Version mitzunehmen.':'Leert der Browser seine Daten, sind Profile und Statistik weg. Sichere sie ab und zu als Datei, auch um sie auf ein anderes Gerät mitzunehmen.')+'</p>';
   h+='<div class="btnrow"><button class="btn primary" data-action="export"'+(profList().length||DS.matches.length?'':' disabled')+'>Exportieren</button><label class="btn">Importieren<input type="file" accept="application/json,.json" data-edit="import" hidden></label></div>';
   if(ui.bmsg)h+='<p class="bmsg'+(ui.bmsg.ok?'':' bad')+'" role="status">'+esc(ui.bmsg.text)+'</p>';
   h+='<p class="note">'+(lb?'Zuletzt gesichert am '+fmtDate(lb)+'.':'Noch nie gesichert.')+' Beim Import kommen nur neue Profile und Spiele dazu, Vorhandenes bleibt unverändert.</p>';
@@ -1134,10 +1090,10 @@ function renderProfilesBody(){
     var s=statsFor(p.id),avg=s.x01.darts?(s.x01.pts/s.x01.darts*3).toFixed(1):'–';
     h+='<button class="prof" data-action="openp" data-pid="'+p.id+'">'+avatarOf(p,'md')+'<span class="pi"><b>'+esc(p.name)+'</b><small>'+s.games+' Spiel'+(s.games===1?'':'e')+', '+s.wins+' Sieg'+(s.wins===1?'':'e')+'</small></span><span class="pv"><b>'+avg+'</b><small>Ø X01</small></span></button>';
   });
-  h+='<p class="note">'+(DS.mode==='group'?'Profile und Statistiken liegen in eurer Gruppe und sind auf allen Geräten mit dem Gruppencode gleich.':DS.mode==='db'?'Profile und Statistiken liegen in deinem Claude-Konto, nur für dich sichtbar, auf jedem Gerät.':'Profile und Statistiken liegen nur in diesem Browser auf diesem Gerät.')+'</p></section>';
+  h+='<p class="note">'+(DS.mode==='group'?'Profile und Statistiken sind online und auf allen Geräten gleich, die diese Seite öffnen.':DS.mode==='db'?'Profile und Statistiken liegen in deinem Claude-Konto, nur für dich sichtbar, auf jedem Gerät.':'Profile und Statistiken liegen nur in diesem Browser auf diesem Gerät.')+'</p>'+shareStatus()+'</section>';
   var recent=DS.matches.slice().sort(function(a,b){return b.at-a.at;}).slice(0,12);
   if(recent.length)h+='<section class="panel"><h2>Letzte Spiele</h2>'+recent.map(function(m){return matchRow(m);}).join('')+'</section>';
-  return h+renderGroupPanel()+renderBackupPanel();
+  return h+renderBackupPanel();
 }
 function renderProfile(){
   var p=DS.profiles[ui.pid];
@@ -1217,7 +1173,6 @@ $app.addEventListener('input',function(e){
   var t=e.target;if(t.tagName!=='INPUT')return;
   var i=t.getAttribute('data-idx');
   if(i!==null&&setup.lineup[+i]){setup.lineup[+i].name=t.value;save();return;}
-  if(t.getAttribute('data-edit')==='gcode'){ui.gcode=t.value;return;}
   if(t.getAttribute('data-edit')==='name'&&ui.edit){ui.edit.name=t.value;var pv=$app.querySelector('.editprev');if(pv)pv.innerHTML=avatarOf(ui.edit,'xl');}
 });
 $app.addEventListener('change',function(e){
@@ -1239,17 +1194,7 @@ $app.addEventListener('click',function(e){
   var b=e.target.closest('[data-action]');if(!b||b.disabled)return;
   var a=b.getAttribute('data-action'),lu=setup.lineup,ix=+b.getAttribute('data-idx');
   switch(a){
-    case'tab':ui.tab=b.getAttribute('data-val');ui.err='';ui.bmsg=null;ui.gmsg=null;ui.confirmLeave=false;render();break;
-    case'gnew':createGroup();break;
-    case'gjoin':var gc=normCode(ui.gcode);if(!gc){ui.gmsg={ok:false,text:'Der Code hat 4 Zeichen, zum Beispiel AB3D.'};render();break;}ui.gcode='';joinGroup(gc);render();break;
-    case'gaccept':joinGroup(ui.invite);render();break;
-    case'gignore':ui.invite=null;render();break;
-    case'gleave':if(!ui.confirmLeave){ui.confirmLeave=true;render();break;}ui.confirmLeave=false;leaveGroup();render();break;
-    case'gshare':var gg=getGroup();if(!gg)break;var link=inviteLink(gg.code);
-      if(navigator.share){navigator.share({title:'Dart-Zähler',text:'Tritt unserer Dart-Gruppe bei: '+fmtCode(gg.code),url:link}).catch(function(){});}
-      else if(navigator.clipboard){navigator.clipboard.writeText(link).then(function(){ui.gmsg={ok:true,text:'Einladungslink kopiert.'};render();},function(){ui.gmsg={ok:true,text:'Link: '+link};render();});}
-      else{ui.gmsg={ok:true,text:'Link: '+link};render();}
-      break;
+    case'tab':ui.tab=b.getAttribute('data-val');ui.err='';ui.bmsg=null;render();break;
     case'export':try{ui.bmsg=exportData();}catch(er){ui.bmsg={ok:false,text:'Export nicht möglich: Dieser Browser blockiert Downloads.'};}render();break;
     case'add':if(lu.length<8){lu.push({name:'Gast '+(lu.filter(function(x){return !x.pid;}).length+1)});save();render();var ins=$app.querySelectorAll('.prow input');var last=ins[ins.length-1];if(last){last.focus();last.select();}}break;
     case'addp':if(lu.length<8){lu.push({pid:b.getAttribute('data-pid')});save();render();}break;
@@ -1305,13 +1250,8 @@ $app.addEventListener('click',function(e){
 load();
 loadData();
 if(G&&!G.over)ui.screen='game';
-function checkInvite(){var mm=/[#&]g=([0-9a-z-]+)/i.exec(location.hash),c=mm&&normCode(mm[1]);
-  if(mm)try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
-  var g=getGroup();if(c&&syncReady()&&(!g||g.code!==c)){ui.invite=c;if(ui.screen!=='game'){ui.screen='setup';ui.tab='profiles';}return true;}return false;}
-checkInvite();
-window.addEventListener('hashchange',function(){if(checkInvite())render();});
 render();
-if(syncReady()&&getGroup())startGroup();else initDb();
+if(syncReady())startGroup();else initDb();
 })();
 </script>
 </body>
