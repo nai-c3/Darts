@@ -443,7 +443,7 @@ function putMatch(m){var i=-1;DS.matches.forEach(function(x,j){if(x.id===m.id)i=
 function removeMatch(id){DS.matches=DS.matches.filter(function(m){return m.id!==id;});saveData();dbWrite(function(){return DS.mc.doc(id).delete();});}
 /* ---------- Gruppen-Sync über Firebase Firestore ---------- */
 /* Konfiguration aus der Firebase-Konsole hier eintragen (Projekteinstellungen, Web-App). Diese Werte sind öffentlich und dürfen im Code stehen. */
-var FIREBASE_CONFIG=null;
+var FIREBASE_CONFIG={apiKey:"AIzaSyBTJ9FNXncZWW6lEr_68ikUx7XMUdA8FTI",authDomain:"darts-d796d.firebaseapp.com",projectId:"darts-d796d",storageBucket:"darts-d796d.firebasestorage.app",messagingSenderId:"768481436853",appId:"1:768481436853:web:bbc54589e2e43789554afc"};
 var FB_SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 var GKEY='dartzaehler-group-v1',GALPHA='23456789abcdefghjkmnpqrstuvwxyz',GLEN=12;
 var FB={fs:null,db:null,unsub:[]};
