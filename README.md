@@ -16,7 +16,7 @@ Ohne Einrichtung speichert die Seite Profile, Statistiken und den laufenden Spie
 
 ## Gruppen-Sync (Firebase Firestore)
 
-Damit eine Spielrunde Profile und Statistiken auf mehreren Handys teilt, nutzt die Seite Firestore. Zugang gibt es über einen 12-stelligen Gruppencode. Wer den Code kennt, kann die Daten der Gruppe lesen und ändern. Einen Login gibt es nicht.
+Damit eine Spielrunde Profile und Statistiken auf mehreren Handys teilt, nutzt die Seite Firestore. Zugang gibt es über einen 4-stelligen Gruppencode (rund 920.000 Möglichkeiten, also nur Schutz vor Zufall, nicht vor gezieltem Durchprobieren). Wer den Code kennt, kann die Daten der Gruppe lesen und ändern. Einen Login gibt es nicht.
 
 Einmalig einrichten:
 

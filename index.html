@@ -445,13 +445,13 @@ function removeMatch(id){DS.matches=DS.matches.filter(function(m){return m.id!==
 /* Konfiguration aus der Firebase-Konsole hier eintragen (Projekteinstellungen, Web-App). Diese Werte sind öffentlich und dürfen im Code stehen. */
 var FIREBASE_CONFIG={apiKey:"AIzaSyBTJ9FNXncZWW6lEr_68ikUx7XMUdA8FTI",authDomain:"darts-d796d.firebaseapp.com",projectId:"darts-d796d",storageBucket:"darts-d796d.firebasestorage.app",messagingSenderId:"768481436853",appId:"1:768481436853:web:bbc54589e2e43789554afc"};
 var FB_SDK='https://www.gstatic.com/firebasejs/10.14.1/';
-var GKEY='dartzaehler-group-v1',GALPHA='23456789abcdefghjkmnpqrstuvwxyz',GLEN=12;
+var GKEY='dartzaehler-group-v1',GALPHA='23456789abcdefghjkmnpqrstuvwxyz',GLEN=4;
 var FB={fs:null,db:null,unsub:[]};
 function syncReady(){return!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.projectId);}
 function getGroup(){try{var g=JSON.parse(localStorage.getItem(GKEY)||'null');return g&&normCode(g.code)?g:null;}catch(e){return null;}}
 function setGroup(g){try{if(g)localStorage.setItem(GKEY,JSON.stringify(g));else localStorage.removeItem(GKEY);}catch(e){}}
-function normCode(c){c=String(c||'').toLowerCase().replace(/[^0-9a-z]/g,'');if(c.length!==GLEN)return null;for(var i=0;i<c.length;i++)if(GALPHA.indexOf(c[i])<0)return null;return c;}
-function fmtCode(c){return c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8);}
+function normCode(c){c=String(c||'').toLowerCase().replace(/[^0-9a-z]/g,'');if(c.length!==GLEN&&c.length!==12)return null; /* 12 Zeichen: Gruppen aus der ersten Version */for(var i=0;i<c.length;i++)if(GALPHA.indexOf(c[i])<0)return null;return c;}
+function fmtCode(c){return(c.length===12?c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8):c).toUpperCase();}
 function newCode(){var a=new Uint32Array(GLEN),c='';crypto.getRandomValues(a);for(var i=0;i<GLEN;i++)c+=GALPHA[a[i]%GALPHA.length];return c;}
 function inviteLink(c){return location.origin+location.pathname+'#g='+c;}
 function safeRender(){var ae=document.activeElement;if(ui.screen==='edit'||(ae&&ae.tagName==='INPUT'))return;render();}
@@ -497,6 +497,22 @@ function startGroup(){
     FB.unsub.push(F.onSnapshot(mcol,{includeMetadataChanges:true},function(s){snaps.m=s;apply();},onErr));
   }).catch(function(){DS.sync='error';DS.syncErr='Die Sync-Bibliothek konnte nicht geladen werden. Bist du online?';safeRender();});
 }
+/* Neuen Code würfeln und prüfen, dass die Gruppe noch leer ist (4 Stellen können doppelt vorkommen). */
+function createGroup(){
+  ui.gmsg={ok:true,text:'Suche freien Code …'};render();
+  fbLoad().then(function(){
+    var F=FB.fs,tries=0;
+    function attempt(){
+      var c=newCode();tries++;
+      return F.getDocs(F.query(F.collection(FB.db,'groups',c,'profiles'),F.limit(1))).then(function(sn){
+        if(sn.empty||tries>=8)return c;return attempt();
+      });
+    }
+    return attempt();
+  }).then(function(c){joinGroup(c);render();},function(e){
+    ui.gmsg={ok:false,text:e&&e.code==='permission-denied'?'Zugriff verweigert. Sind die aktuellen Firestore-Regeln veröffentlicht?':'Keine Verbindung. Gruppe anlegen geht nur online.'};render();
+  });
+}
 function joinGroup(code){setGroup({code:code,merged:false});ui.invite=null;ui.gmsg=null;startGroup();}
 function leaveGroup(){fbStop();setGroup(null);ui.gmsg={ok:true,text:'Gruppe verlassen. Die Daten bleiben als Kopie auf diesem Gerät.'};}
 function renderGroupPanel(){
@@ -516,7 +532,7 @@ function renderGroupPanel(){
   }else{
     h+='<p class="hint nomt">Leg eine Gruppe an, damit Profile und Statistiken auf allen Handys eurer Runde gleich sind. Oder tritt mit dem Code eines Mitspielers bei.</p>';
     h+='<div class="btnrow"><button class="btn primary" data-action="gnew">Gruppe anlegen</button></div>';
-    h+='<div class="gjoin"><input class="tin" data-edit="gcode" placeholder="Code, z. B. ab3d-ef7h-jk9m" autocomplete="off" autocapitalize="off" spellcheck="false" value="'+esc(ui.gcode||'')+'"><button class="btn" data-action="gjoin">Beitreten</button></div>';
+    h+='<div class="gjoin"><input class="tin" data-edit="gcode" placeholder="Code, z. B. AB3D" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" value="'+esc(ui.gcode||'')+'"><button class="btn" data-action="gjoin">Beitreten</button></div>';
   }
   if(ui.gmsg)h+='<p class="bmsg'+(ui.gmsg.ok?'':' bad')+'" role="status">'+esc(ui.gmsg.text)+'</p>';
   return h+'</section>';
@@ -1224,8 +1240,8 @@ $app.addEventListener('click',function(e){
   var a=b.getAttribute('data-action'),lu=setup.lineup,ix=+b.getAttribute('data-idx');
   switch(a){
     case'tab':ui.tab=b.getAttribute('data-val');ui.err='';ui.bmsg=null;ui.gmsg=null;ui.confirmLeave=false;render();break;
-    case'gnew':joinGroup(newCode());render();break;
-    case'gjoin':var gc=normCode(ui.gcode);if(!gc){ui.gmsg={ok:false,text:'Der Code hat 12 Zeichen, zum Beispiel ab3d-ef7h-jk9m.'};render();break;}ui.gcode='';joinGroup(gc);render();break;
+    case'gnew':createGroup();break;
+    case'gjoin':var gc=normCode(ui.gcode);if(!gc){ui.gmsg={ok:false,text:'Der Code hat 4 Zeichen, zum Beispiel AB3D.'};render();break;}ui.gcode='';joinGroup(gc);render();break;
     case'gaccept':joinGroup(ui.invite);render();break;
     case'gignore':ui.invite=null;render();break;
     case'gleave':if(!ui.confirmLeave){ui.confirmLeave=true;render();break;}ui.confirmLeave=false;leaveGroup();render();break;
