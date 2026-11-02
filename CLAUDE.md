@@ -16,7 +16,9 @@ Steeldarts-Zähler als **eine einzige Datei**: `index.html` (HTML, CSS, JS inlin
 
 ## Speicherung
 - `localStorage`: `dartzaehler-v1` (Setup, laufendes Spiel, Undo-Stack), `dartzaehler-data-v1` (Profile, Partien).
-- Nur auf claude.ai: zusätzlich `window.claude.use('db')` + `use('user')`, Pfad `data/users/<id>/dz/profiles` und `/dz/matches`. Außerhalb von claude.ai fehlt `window.claude`, die Seite fällt automatisch auf `localStorage` zurück.
+- Gruppen-Sync: Firebase Firestore (SDK 10.14.1 per dynamischem `import()` von gstatic), Konstante `FIREBASE_CONFIG` in `index.html` (solange `null`, ist der Sync ausgeblendet). Pfade `groups/<code>/profiles|matches`, 12-stelliger Code aus `23456789abcdefghjkmnpqrstuvwxyz`, keine Anmeldung, Regeln in `firestore.rules`. Gruppe in `localStorage` `dartzaehler-group-v1` ({code, merged}). Lokale Daten werden nur beim ersten Beitritt hochgeladen, danach ist die Gruppe maßgeblich (sonst kämen gelöschte Einträge zurück). Einladung per `#g=<code>`.
+- Export/Import als JSON (`{app:'dartzaehler',v:1,profiles,matches}`), Import ergänzt nur neue IDs. Letzte Sicherung in `dartzaehler-backup-v1`.
+- Nur auf claude.ai (und nur ohne Gruppe): zusätzlich `window.claude.use('db')` + `use('user')`, Pfad `data/users/<id>/dz/profiles` und `/dz/matches`. Außerhalb von claude.ai fehlt `window.claude`, die Seite fällt automatisch auf `localStorage` zurück.
 
 ## Design: System „Linkedin-Niklas“ (eigenes Design-System des Nutzers)
 - Farben: ultramarine #3F37FF, cobalt #023FA5, midnight #240D57, violet #592795, raspberry #EA465C, signal #ED292A, sun #FBC507, rust #CE4000, magenta #ED40B5, paper #ECEDDF, white.
@@ -29,6 +31,5 @@ Steeldarts-Zähler als **eine einzige Datei**: `index.html` (HTML, CSS, JS inlin
 
 ## Offene Ideen (vom Nutzer noch nicht beauftragt)
 - Summen-Eingabe pro Aufnahme (statt Dart für Dart) für schnelleres Zählen.
-- Export/Import der Profile und Statistiken als Datei (wichtig für die GitHub-Version, da nur im Browser gespeichert).
 - Checkout-Quote (Versuche aufs Doppel erfassen).
 - Optionale Rundung beim Split-Score-Halbieren.

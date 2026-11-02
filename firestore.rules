@@ -1,0 +1,16 @@
+rules_version = '2';
+// Zugriff nur über den 12-stelligen Gruppencode. Wer den Code kennt, darf lesen und schreiben.
+// Die Gruppenliste selbst ist nicht abrufbar, Codes lassen sich also nicht auflisten.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /groups/{group}/{col}/{id} {
+      function validGroup() {
+        return group.matches('^[2-9a-hjkmnp-z]{12}$') && col in ['profiles', 'matches'];
+      }
+      allow get, list, delete: if validGroup();
+      allow create, update: if validGroup()
+        && request.resource.data.id == id
+        && request.resource.data.size() <= 12;
+    }
+  }
+}
