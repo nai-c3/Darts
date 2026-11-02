@@ -38,8 +38,13 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .hero p{position:relative;font-size:17px;line-height:1.3;margin-top:12px;color:var(--paper);max-width:30ch}
 .hero.art{padding:0;min-height:0;height:clamp(200px,56vw,320px);display:block}
 .hero.art .hb{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hb-spin{animation:hbspin 180s linear infinite}
+.hb-spin,.hb-hit{transform-box:fill-box;transform-origin:center}
+.hb-spin{animation:hbspin 48s linear infinite}
 @keyframes hbspin{to{transform:rotate(360deg)}}
+.hb-dart{animation:hbthrow 7s cubic-bezier(.3,.1,.3,1) infinite}
+@keyframes hbthrow{0%{transform:translate(-330px,-108px);opacity:0}4%{opacity:1}12%{transform:translate(0,0)}14%{transform:translate(-9px,-3px)}16.5%{transform:translate(0,0)}17.5%{transform:translate(-2px,-1px)}19%,84%{transform:translate(0,0);opacity:1}92%,100%{transform:translate(-40px,-13px);opacity:0}}
+.hb-hit{animation:hbhit 7s ease-out infinite;opacity:0}
+@keyframes hbhit{0%,11.9%{transform:scale(1);opacity:0}12%{transform:scale(1);opacity:1}24%,100%{transform:scale(6);opacity:0}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .panel{background:var(--field);color:var(--fieldInk);padding:20px;margin:0 0 8px}
 @media (min-width:760px){.hero{margin-top:20px}}
@@ -253,6 +258,67 @@ label.btn{display:inline-block;cursor:pointer}
 .gjoin .tin{flex:1;min-width:0;font-size:17px}
 .bmsg{margin-top:12px;padding:12px 16px;border-radius:8px;background:var(--sun);color:var(--midnight);font-size:15px;line-height:1.4}
 .bmsg.bad{background:var(--signal);color:var(--white)}
+/* Split Score */
+.sp-seq{display:flex;gap:4px;margin:0 0 8px;overflow-x:auto}
+.sp-seq span{flex:1 0 auto;min-width:32px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--field);font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:-.03em;text-transform:uppercase}
+.sp-seq span.done{opacity:.35}
+.sp-seq span.on{background:var(--ultramarine);color:var(--sun)}
+.sp-goal{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.sp-goal small{font-size:13px;opacity:.75}
+.sp-goal b{font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:-.05em;text-transform:uppercase;color:var(--ultramarine)}
+.sp-goal span{margin-left:auto;font-size:13px;opacity:.75;text-align:right}
+.sp3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sp3.two{grid-template-columns:1fr 1fr}
+.k.big{height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.k.big small{font-family:var(--serif);font-weight:300;font-size:15px;letter-spacing:0;text-transform:none}
+.k.big b{font-size:44px;letter-spacing:-.05em}
+.k.d{background:var(--sun);color:var(--midnight)}
+.k.t{background:var(--signal);color:var(--white)}
+.sp-b{grid-template-columns:2fr 1fr}
+.sp-b:has(.d){grid-template-columns:1.2fr 1.2fr 1fr}
+/* Spielmenü */
+.sheet-bg{position:fixed;inset:0;background:rgba(36,13,87,.55);z-index:25}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:26;background:var(--white);color:var(--midnight);padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto;animation:sheetup .22s ease-out}
+.sheet h2{font-size:19px;letter-spacing:-.05em;margin-bottom:8px}
+.sheet .btn{width:100%;padding:16px;font-size:15px}
+.sheet .hint{margin:0 0 8px;font-size:13px}
+@keyframes sheetup{from{transform:translateY(100%)}}
+/* Effekte: Halbieren, Raus */
+.fx{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden;cursor:pointer;animation:fxbg 2.6s ease forwards}
+.fx.half{background:var(--signal);color:var(--white)}
+.fx.out{background:var(--midnight);color:var(--sun);animation-duration:2.2s}
+@keyframes fxbg{0%{opacity:0}6%{opacity:1}86%{opacity:1}100%{opacity:0}}
+.fx-name{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.05em;text-transform:uppercase;max-width:90vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:fxin .3s ease-out both}
+.fx-sub{font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:-.05em;text-transform:uppercase;color:var(--sun);animation:fxin .3s 1.3s ease-out both}
+@keyframes fxin{from{opacity:0;transform:translateY(16px)}}
+.fx-stack{display:grid;place-items:center;font-family:var(--disp);font-weight:800;line-height:1;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.fx-stack>*{grid-area:1/1}
+.fx-h.l{clip-path:inset(-20% 50% -20% -20%);animation:fxl 2.6s cubic-bezier(.5,0,.75,0) both}
+.fx-h.r{clip-path:inset(-20% -20% -20% 50%);animation:fxr 2.6s cubic-bezier(.5,0,.75,0) both}
+@keyframes fxl{0%{transform:scale(1.25);opacity:0}10%{transform:scale(1);opacity:1}34%{transform:none}38%{transform:translateX(-4%)}62%{transform:translate(-55%,45vh) rotate(-24deg);opacity:0}100%{opacity:0}}
+@keyframes fxr{0%{transform:scale(1.25);opacity:0}10%{transform:scale(1);opacity:1}34%{transform:none}38%{transform:translateX(4%)}62%{transform:translate(55%,45vh) rotate(24deg);opacity:0}100%{opacity:0}}
+.fx-cut{width:.06em;height:1.3em;background:var(--sun);transform:scaleY(0) rotate(8deg);animation:fxcut 2.6s both}
+@keyframes fxcut{0%,22%{transform:scaleY(0) rotate(8deg);opacity:1}32%{transform:scaleY(1) rotate(8deg);opacity:1}44%,100%{transform:scaleY(1) rotate(8deg);opacity:0}}
+.fx-new{color:var(--sun);animation:fxnew 2.6s both}
+@keyframes fxnew{0%,48%{transform:scale(.3);opacity:0}60%{transform:scale(1.12);opacity:1}68%,100%{transform:scale(1);opacity:1}}
+.fx-big{font-family:var(--disp);font-weight:800;font-size:min(30vw,200px);line-height:1;letter-spacing:-.05em;text-transform:uppercase;transform-origin:10% 0;animation:fxswing 2.2s .2s both}
+@keyframes fxswing{0%{transform:translateY(-60vh)}22%{transform:none}34%{transform:rotate(14deg)}46%{transform:rotate(9deg)}56%{transform:rotate(12deg)}70%,100%{transform:rotate(11deg) translateY(4px)}}
+/* Spielende: Gewinnen, Verlieren */
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.confetti i{position:absolute;top:-24px;left:var(--x);width:var(--s);height:calc(var(--s) * .55);background:var(--c);animation:conf var(--d) calc(var(--dl) + var(--late,0s)) cubic-bezier(.2,.5,.4,1) both}
+@keyframes conf{from{transform:translate(0,0) rotate(0)}to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+.overlay.anim .modal{z-index:2}
+.overlay.anim .modal h3{animation:winpop .7s var(--late,0s) cubic-bezier(.2,1.6,.4,1) both}
+@keyframes winpop{0%{transform:scale(.4) translateY(40px);opacity:0}100%{transform:none;opacity:1}}
+.overlay.anim .st tr.win{animation:winrow .9s calc(.5s + var(--late,0s)) both}
+@keyframes winrow{0%{opacity:0;transform:translateX(-24px)}60%{opacity:1;transform:translateX(4px)}100%{transform:none}}
+.st tr.lose{opacity:.6}
+.overlay.anim .st tr.lose{animation:loserow 1s calc(1s + var(--i) * .12s + var(--late,0s)) both}
+@keyframes loserow{0%{opacity:0;transform:translateY(-16px)}50%{opacity:.6;transform:translateY(4px) rotate(.6deg)}100%{opacity:.6;transform:none}}
+.loser{font-family:var(--disp);font-weight:800;text-transform:uppercase;letter-spacing:-.05em;font-size:24px;color:var(--midnight)}
+.loser span{display:inline-block;transform-origin:0 0;transform:rotate(4deg)}
+.overlay.anim .loser span{animation:loseswing 2.4s calc(.9s + var(--late,0s)) both}
+@keyframes loseswing{0%{opacity:0;transform:translateY(-20px)}12%{opacity:1;transform:none}30%{transform:rotate(9deg)}44%{transform:rotate(2deg)}58%{transform:rotate(6deg)}72%{transform:rotate(3.5deg)}100%{transform:rotate(4deg)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -297,7 +363,10 @@ var RULES={
   split:'Alle starten mit 40 Punkten oder mit dem, was sie in einer freien Einwurfrunde werfen. Danach gibt jede Runde ein Ziel vor: 15, 16, beliebiges Doppel, 17, 18, beliebiges Triple, 19, 20, Bull. Jeder Treffer aufs Ziel zählt mit seinem vollen Wert (Bull 25 oder 50). Wer in einer Runde mit allen drei Darts das Ziel verfehlt, dessen Punktestand wird halbiert (abgerundet). Nach der Bull-Runde gewinnt die höchste Punktzahl.'
 };
 var LBL={straight:'Single',double:'Double',master:'Master'};
-var HERO_SVG='<svg class="hb" viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><defs><pattern id="hbDots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="2.3" fill="#023FA5"/></pattern></defs><g transform="translate(300 160)"><g class="hb-spin"><circle r="200" fill="none" stroke="#FBC507" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 15.7"/><path d="M15.5 -97.8A99 99 0 0 1 44.9 -88.2L7.3 -14.3A16 16 0 0 0 2.5 -15.8ZM25.3 -160.0A162 162 0 0 1 73.5 -144.3L48.6 -95.3A107 107 0 0 0 16.7 -105.7ZM70.0 -70.0A99 99 0 0 1 88.2 -44.9L14.3 -7.3A16 16 0 0 0 11.3 -11.3ZM114.6 -114.6A162 162 0 0 1 144.3 -73.5L95.3 -48.6A107 107 0 0 0 75.7 -75.7ZM97.8 -15.5A99 99 0 0 1 97.8 15.5L15.8 2.5A16 16 0 0 0 15.8 -2.5ZM160.0 -25.3A162 162 0 0 1 160.0 25.3L105.7 16.7A107 107 0 0 0 105.7 -16.7ZM88.2 44.9A99 99 0 0 1 70.0 70.0L11.3 11.3A16 16 0 0 0 14.3 7.3ZM144.3 73.5A162 162 0 0 1 114.6 114.6L75.7 75.7A107 107 0 0 0 95.3 48.6ZM44.9 88.2A99 99 0 0 1 15.5 97.8L2.5 15.8A16 16 0 0 0 7.3 14.3ZM73.5 144.3A162 162 0 0 1 25.3 160.0L16.7 105.7A107 107 0 0 0 48.6 95.3ZM-15.5 97.8A99 99 0 0 1 -44.9 88.2L-7.3 14.3A16 16 0 0 0 -2.5 15.8ZM-25.3 160.0A162 162 0 0 1 -73.5 144.3L-48.6 95.3A107 107 0 0 0 -16.7 105.7ZM-70.0 70.0A99 99 0 0 1 -88.2 44.9L-14.3 7.3A16 16 0 0 0 -11.3 11.3ZM-114.6 114.6A162 162 0 0 1 -144.3 73.5L-95.3 48.6A107 107 0 0 0 -75.7 75.7ZM-97.8 15.5A99 99 0 0 1 -97.8 -15.5L-15.8 -2.5A16 16 0 0 0 -15.8 2.5ZM-160.0 25.3A162 162 0 0 1 -160.0 -25.3L-105.7 -16.7A107 107 0 0 0 -105.7 16.7ZM-88.2 -44.9A99 99 0 0 1 -70.0 -70.0L-11.3 -11.3A16 16 0 0 0 -14.3 -7.3ZM-144.3 -73.5A162 162 0 0 1 -114.6 -114.6L-75.7 -75.7A107 107 0 0 0 -95.3 -48.6ZM-44.9 -88.2A99 99 0 0 1 -15.5 -97.8L-2.5 -15.8A16 16 0 0 0 -7.3 -14.3ZM-73.5 -144.3A162 162 0 0 1 -25.3 -160.0L-16.7 -105.7A107 107 0 0 0 -48.6 -95.3Z" fill="url(#hbDots)"/><path d="M-15.5 -97.8A99 99 0 0 1 15.5 -97.8L2.5 -15.8A16 16 0 0 0 -2.5 -15.8ZM-25.3 -160.0A162 162 0 0 1 25.3 -160.0L16.7 -105.7A107 107 0 0 0 -16.7 -105.7ZM44.9 -88.2A99 99 0 0 1 70.0 -70.0L11.3 -11.3A16 16 0 0 0 7.3 -14.3ZM73.5 -144.3A162 162 0 0 1 114.6 -114.6L75.7 -75.7A107 107 0 0 0 48.6 -95.3ZM88.2 -44.9A99 99 0 0 1 97.8 -15.5L15.8 -2.5A16 16 0 0 0 14.3 -7.3ZM144.3 -73.5A162 162 0 0 1 160.0 -25.3L105.7 -16.7A107 107 0 0 0 95.3 -48.6ZM97.8 15.5A99 99 0 0 1 88.2 44.9L14.3 7.3A16 16 0 0 0 15.8 2.5ZM160.0 25.3A162 162 0 0 1 144.3 73.5L95.3 48.6A107 107 0 0 0 105.7 16.7ZM70.0 70.0A99 99 0 0 1 44.9 88.2L7.3 14.3A16 16 0 0 0 11.3 11.3ZM114.6 114.6A162 162 0 0 1 73.5 144.3L48.6 95.3A107 107 0 0 0 75.7 75.7ZM15.5 97.8A99 99 0 0 1 -15.5 97.8L-2.5 15.8A16 16 0 0 0 2.5 15.8ZM25.3 160.0A162 162 0 0 1 -25.3 160.0L-16.7 105.7A107 107 0 0 0 16.7 105.7ZM-44.9 88.2A99 99 0 0 1 -70.0 70.0L-11.3 11.3A16 16 0 0 0 -7.3 14.3ZM-73.5 144.3A162 162 0 0 1 -114.6 114.6L-75.7 75.7A107 107 0 0 0 -48.6 95.3ZM-88.2 44.9A99 99 0 0 1 -97.8 15.5L-15.8 2.5A16 16 0 0 0 -14.3 7.3ZM-144.3 73.5A162 162 0 0 1 -160.0 25.3L-105.7 16.7A107 107 0 0 0 -95.3 48.6ZM-97.8 -15.5A99 99 0 0 1 -88.2 -44.9L-14.3 -7.3A16 16 0 0 0 -15.8 -2.5ZM-160.0 -25.3A162 162 0 0 1 -144.3 -73.5L-95.3 -48.6A107 107 0 0 0 -105.7 -16.7ZM-70.0 -70.0A99 99 0 0 1 -44.9 -88.2L-7.3 -14.3A16 16 0 0 0 -11.3 -11.3ZM-114.6 -114.6A162 162 0 0 1 -73.5 -144.3L-48.6 -95.3A107 107 0 0 0 -75.7 -75.7Z" fill="#FBC507"/><path d="M16.7 -105.7A107 107 0 0 1 48.6 -95.3L44.9 -88.2A99 99 0 0 0 15.5 -97.8ZM26.6 -167.9A170 170 0 0 1 77.2 -151.5L73.5 -144.3A162 162 0 0 0 25.3 -160.0ZM75.7 -75.7A107 107 0 0 1 95.3 -48.6L88.2 -44.9A99 99 0 0 0 70.0 -70.0ZM120.2 -120.2A170 170 0 0 1 151.5 -77.2L144.3 -73.5A162 162 0 0 0 114.6 -114.6ZM105.7 -16.7A107 107 0 0 1 105.7 16.7L97.8 15.5A99 99 0 0 0 97.8 -15.5ZM167.9 -26.6A170 170 0 0 1 167.9 26.6L160.0 25.3A162 162 0 0 0 160.0 -25.3ZM95.3 48.6A107 107 0 0 1 75.7 75.7L70.0 70.0A99 99 0 0 0 88.2 44.9ZM151.5 77.2A170 170 0 0 1 120.2 120.2L114.6 114.6A162 162 0 0 0 144.3 73.5ZM48.6 95.3A107 107 0 0 1 16.7 105.7L15.5 97.8A99 99 0 0 0 44.9 88.2ZM77.2 151.5A170 170 0 0 1 26.6 167.9L25.3 160.0A162 162 0 0 0 73.5 144.3ZM-16.7 105.7A107 107 0 0 1 -48.6 95.3L-44.9 88.2A99 99 0 0 0 -15.5 97.8ZM-26.6 167.9A170 170 0 0 1 -77.2 151.5L-73.5 144.3A162 162 0 0 0 -25.3 160.0ZM-75.7 75.7A107 107 0 0 1 -95.3 48.6L-88.2 44.9A99 99 0 0 0 -70.0 70.0ZM-120.2 120.2A170 170 0 0 1 -151.5 77.2L-144.3 73.5A162 162 0 0 0 -114.6 114.6ZM-105.7 16.7A107 107 0 0 1 -105.7 -16.7L-97.8 -15.5A99 99 0 0 0 -97.8 15.5ZM-167.9 26.6A170 170 0 0 1 -167.9 -26.6L-160.0 -25.3A162 162 0 0 0 -160.0 25.3ZM-95.3 -48.6A107 107 0 0 1 -75.7 -75.7L-70.0 -70.0A99 99 0 0 0 -88.2 -44.9ZM-151.5 -77.2A170 170 0 0 1 -120.2 -120.2L-114.6 -114.6A162 162 0 0 0 -144.3 -73.5ZM-48.6 -95.3A107 107 0 0 1 -16.7 -105.7L-15.5 -97.8A99 99 0 0 0 -44.9 -88.2ZM-77.2 -151.5A170 170 0 0 1 -26.6 -167.9L-25.3 -160.0A162 162 0 0 0 -73.5 -144.3Z" fill="#FBC507"/><path d="M-16.7 -105.7A107 107 0 0 1 16.7 -105.7L15.5 -97.8A99 99 0 0 0 -15.5 -97.8ZM-26.6 -167.9A170 170 0 0 1 26.6 -167.9L25.3 -160.0A162 162 0 0 0 -25.3 -160.0ZM48.6 -95.3A107 107 0 0 1 75.7 -75.7L70.0 -70.0A99 99 0 0 0 44.9 -88.2ZM77.2 -151.5A170 170 0 0 1 120.2 -120.2L114.6 -114.6A162 162 0 0 0 73.5 -144.3ZM95.3 -48.6A107 107 0 0 1 105.7 -16.7L97.8 -15.5A99 99 0 0 0 88.2 -44.9ZM151.5 -77.2A170 170 0 0 1 167.9 -26.6L160.0 -25.3A162 162 0 0 0 144.3 -73.5ZM105.7 16.7A107 107 0 0 1 95.3 48.6L88.2 44.9A99 99 0 0 0 97.8 15.5ZM167.9 26.6A170 170 0 0 1 151.5 77.2L144.3 73.5A162 162 0 0 0 160.0 25.3ZM75.7 75.7A107 107 0 0 1 48.6 95.3L44.9 88.2A99 99 0 0 0 70.0 70.0ZM120.2 120.2A170 170 0 0 1 77.2 151.5L73.5 144.3A162 162 0 0 0 114.6 114.6ZM16.7 105.7A107 107 0 0 1 -16.7 105.7L-15.5 97.8A99 99 0 0 0 15.5 97.8ZM26.6 167.9A170 170 0 0 1 -26.6 167.9L-25.3 160.0A162 162 0 0 0 25.3 160.0ZM-48.6 95.3A107 107 0 0 1 -75.7 75.7L-70.0 70.0A99 99 0 0 0 -44.9 88.2ZM-77.2 151.5A170 170 0 0 1 -120.2 120.2L-114.6 114.6A162 162 0 0 0 -73.5 144.3ZM-95.3 48.6A107 107 0 0 1 -105.7 16.7L-97.8 15.5A99 99 0 0 0 -88.2 44.9ZM-151.5 77.2A170 170 0 0 1 -167.9 26.6L-160.0 25.3A162 162 0 0 0 -144.3 73.5ZM-105.7 -16.7A107 107 0 0 1 -95.3 -48.6L-88.2 -44.9A99 99 0 0 0 -97.8 -15.5ZM-167.9 -26.6A170 170 0 0 1 -151.5 -77.2L-144.3 -73.5A162 162 0 0 0 -160.0 -25.3ZM-75.7 -75.7A107 107 0 0 1 -48.6 -95.3L-44.9 -88.2A99 99 0 0 0 -70.0 -70.0ZM-120.2 -120.2A170 170 0 0 1 -77.2 -151.5L-73.5 -144.3A162 162 0 0 0 -114.6 -114.6Z" fill="#023FA5"/><circle r="16" fill="#FBC507"/><circle r="6.4" fill="#023FA5"/><g fill="none" stroke="#3F37FF" stroke-width="2"><path d="M-2.5 -15.8L-26.6 -167.9M2.5 -15.8L26.6 -167.9M7.3 -14.3L77.2 -151.5M11.3 -11.3L120.2 -120.2M14.3 -7.3L151.5 -77.2M15.8 -2.5L167.9 -26.6M15.8 2.5L167.9 26.6M14.3 7.3L151.5 77.2M11.3 11.3L120.2 120.2M7.3 14.3L77.2 151.5M2.5 15.8L26.6 167.9M-2.5 15.8L-26.6 167.9M-7.3 14.3L-77.2 151.5M-11.3 11.3L-120.2 120.2M-14.3 7.3L-151.5 77.2M-15.8 2.5L-167.9 26.6M-15.8 -2.5L-167.9 -26.6M-14.3 -7.3L-151.5 -77.2M-11.3 -11.3L-120.2 -120.2M-7.3 -14.3L-77.2 -151.5"/><circle r="16"/><circle r="99"/><circle r="107"/><circle r="162"/><circle r="170"/></g></g><g transform="rotate(18) scale(1.25)" fill="#ECEDDF" stroke="#3F37FF" stroke-width="3" stroke-linejoin="round"><path d="M-3 0L-34 -2.6L-34 2.6Z"/><path d="M-150 0L-118 -4L-160 -34L-196 -34L-182 -4L-182 4L-196 34L-160 34L-118 4Z"/><rect x="-122" y="-3.2" width="48" height="6.4" rx="3"/><rect x="-80" y="-7.5" width="50" height="15" rx="6"/><g stroke="none" fill="#3F37FF"><rect x="-72" y="-8" width="3" height="16"/><rect x="-64" y="-8" width="3" height="16"/><rect x="-56" y="-8" width="3" height="16"/><rect x="-48" y="-8" width="3" height="16"/></g></g></g></svg>';
+var HERO_SVG='<svg class="hb" viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><defs><pattern id="hbDots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="2.3" fill="#023FA5"/></pattern></defs><g transform="translate(300 160)"><g class="hb-spin"><circle r="200" fill="none" stroke="#FBC507" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 15.7"/><path d="M15.5 -97.8A99 99 0 0 1 44.9 -88.2L7.3 -14.3A16 16 0 0 0 2.5 -15.8ZM25.3 -160.0A162 162 0 0 1 73.5 -144.3L48.6 -95.3A107 107 0 0 0 16.7 -105.7ZM70.0 -70.0A99 99 0 0 1 88.2 -44.9L14.3 -7.3A16 16 0 0 0 11.3 -11.3ZM114.6 -114.6A162 162 0 0 1 144.3 -73.5L95.3 -48.6A107 107 0 0 0 75.7 -75.7ZM97.8 -15.5A99 99 0 0 1 97.8 15.5L15.8 2.5A16 16 0 0 0 15.8 -2.5ZM160.0 -25.3A162 162 0 0 1 160.0 25.3L105.7 16.7A107 107 0 0 0 105.7 -16.7ZM88.2 44.9A99 99 0 0 1 70.0 70.0L11.3 11.3A16 16 0 0 0 14.3 7.3ZM144.3 73.5A162 162 0 0 1 114.6 114.6L75.7 75.7A107 107 0 0 0 95.3 48.6ZM44.9 88.2A99 99 0 0 1 15.5 97.8L2.5 15.8A16 16 0 0 0 7.3 14.3ZM73.5 144.3A162 162 0 0 1 25.3 160.0L16.7 105.7A107 107 0 0 0 48.6 95.3ZM-15.5 97.8A99 99 0 0 1 -44.9 88.2L-7.3 14.3A16 16 0 0 0 -2.5 15.8ZM-25.3 160.0A162 162 0 0 1 -73.5 144.3L-48.6 95.3A107 107 0 0 0 -16.7 105.7ZM-70.0 70.0A99 99 0 0 1 -88.2 44.9L-14.3 7.3A16 16 0 0 0 -11.3 11.3ZM-114.6 114.6A162 162 0 0 1 -144.3 73.5L-95.3 48.6A107 107 0 0 0 -75.7 75.7ZM-97.8 15.5A99 99 0 0 1 -97.8 -15.5L-15.8 -2.5A16 16 0 0 0 -15.8 2.5ZM-160.0 25.3A162 162 0 0 1 -160.0 -25.3L-105.7 -16.7A107 107 0 0 0 -105.7 16.7ZM-88.2 -44.9A99 99 0 0 1 -70.0 -70.0L-11.3 -11.3A16 16 0 0 0 -14.3 -7.3ZM-144.3 -73.5A162 162 0 0 1 -114.6 -114.6L-75.7 -75.7A107 107 0 0 0 -95.3 -48.6ZM-44.9 -88.2A99 99 0 0 1 -15.5 -97.8L-2.5 -15.8A16 16 0 0 0 -7.3 -14.3ZM-73.5 -144.3A162 162 0 0 1 -25.3 -160.0L-16.7 -105.7A107 107 0 0 0 -48.6 -95.3Z" fill="url(#hbDots)"/><path d="M-15.5 -97.8A99 99 0 0 1 15.5 -97.8L2.5 -15.8A16 16 0 0 0 -2.5 -15.8ZM-25.3 -160.0A162 162 0 0 1 25.3 -160.0L16.7 -105.7A107 107 0 0 0 -16.7 -105.7ZM44.9 -88.2A99 99 0 0 1 70.0 -70.0L11.3 -11.3A16 16 0 0 0 7.3 -14.3ZM73.5 -144.3A162 162 0 0 1 114.6 -114.6L75.7 -75.7A107 107 0 0 0 48.6 -95.3ZM88.2 -44.9A99 99 0 0 1 97.8 -15.5L15.8 -2.5A16 16 0 0 0 14.3 -7.3ZM144.3 -73.5A162 162 0 0 1 160.0 -25.3L105.7 -16.7A107 107 0 0 0 95.3 -48.6ZM97.8 15.5A99 99 0 0 1 88.2 44.9L14.3 7.3A16 16 0 0 0 15.8 2.5ZM160.0 25.3A162 162 0 0 1 144.3 73.5L95.3 48.6A107 107 0 0 0 105.7 16.7ZM70.0 70.0A99 99 0 0 1 44.9 88.2L7.3 14.3A16 16 0 0 0 11.3 11.3ZM114.6 114.6A162 162 0 0 1 73.5 144.3L48.6 95.3A107 107 0 0 0 75.7 75.7ZM15.5 97.8A99 99 0 0 1 -15.5 97.8L-2.5 15.8A16 16 0 0 0 2.5 15.8ZM25.3 160.0A162 162 0 0 1 -25.3 160.0L-16.7 105.7A107 107 0 0 0 16.7 105.7ZM-44.9 88.2A99 99 0 0 1 -70.0 70.0L-11.3 11.3A16 16 0 0 0 -7.3 14.3ZM-73.5 144.3A162 162 0 0 1 -114.6 114.6L-75.7 75.7A107 107 0 0 0 -48.6 95.3ZM-88.2 44.9A99 99 0 0 1 -97.8 15.5L-15.8 2.5A16 16 0 0 0 -14.3 7.3ZM-144.3 73.5A162 162 0 0 1 -160.0 25.3L-105.7 16.7A107 107 0 0 0 -95.3 48.6ZM-97.8 -15.5A99 99 0 0 1 -88.2 -44.9L-14.3 -7.3A16 16 0 0 0 -15.8 -2.5ZM-160.0 -25.3A162 162 0 0 1 -144.3 -73.5L-95.3 -48.6A107 107 0 0 0 -105.7 -16.7ZM-70.0 -70.0A99 99 0 0 1 -44.9 -88.2L-7.3 -14.3A16 16 0 0 0 -11.3 -11.3ZM-114.6 -114.6A162 162 0 0 1 -73.5 -144.3L-48.6 -95.3A107 107 0 0 0 -75.7 -75.7Z" fill="#FBC507"/><path d="M16.7 -105.7A107 107 0 0 1 48.6 -95.3L44.9 -88.2A99 99 0 0 0 15.5 -97.8ZM26.6 -167.9A170 170 0 0 1 77.2 -151.5L73.5 -144.3A162 162 0 0 0 25.3 -160.0ZM75.7 -75.7A107 107 0 0 1 95.3 -48.6L88.2 -44.9A99 99 0 0 0 70.0 -70.0ZM120.2 -120.2A170 170 0 0 1 151.5 -77.2L144.3 -73.5A162 162 0 0 0 114.6 -114.6ZM105.7 -16.7A107 107 0 0 1 105.7 16.7L97.8 15.5A99 99 0 0 0 97.8 -15.5ZM167.9 -26.6A170 170 0 0 1 167.9 26.6L160.0 25.3A162 162 0 0 0 160.0 -25.3ZM95.3 48.6A107 107 0 0 1 75.7 75.7L70.0 70.0A99 99 0 0 0 88.2 44.9ZM151.5 77.2A170 170 0 0 1 120.2 120.2L114.6 114.6A162 162 0 0 0 144.3 73.5ZM48.6 95.3A107 107 0 0 1 16.7 105.7L15.5 97.8A99 99 0 0 0 44.9 88.2ZM77.2 151.5A170 170 0 0 1 26.6 167.9L25.3 160.0A162 162 0 0 0 73.5 144.3ZM-16.7 105.7A107 107 0 0 1 -48.6 95.3L-44.9 88.2A99 99 0 0 0 -15.5 97.8ZM-26.6 167.9A170 170 0 0 1 -77.2 151.5L-73.5 144.3A162 162 0 0 0 -25.3 160.0ZM-75.7 75.7A107 107 0 0 1 -95.3 48.6L-88.2 44.9A99 99 0 0 0 -70.0 70.0ZM-120.2 120.2A170 170 0 0 1 -151.5 77.2L-144.3 73.5A162 162 0 0 0 -114.6 114.6ZM-105.7 16.7A107 107 0 0 1 -105.7 -16.7L-97.8 -15.5A99 99 0 0 0 -97.8 15.5ZM-167.9 26.6A170 170 0 0 1 -167.9 -26.6L-160.0 -25.3A162 162 0 0 0 -160.0 25.3ZM-95.3 -48.6A107 107 0 0 1 -75.7 -75.7L-70.0 -70.0A99 99 0 0 0 -88.2 -44.9ZM-151.5 -77.2A170 170 0 0 1 -120.2 -120.2L-114.6 -114.6A162 162 0 0 0 -144.3 -73.5ZM-48.6 -95.3A107 107 0 0 1 -16.7 -105.7L-15.5 -97.8A99 99 0 0 0 -44.9 -88.2ZM-77.2 -151.5A170 170 0 0 1 -26.6 -167.9L-25.3 -160.0A162 162 0 0 0 -73.5 -144.3Z" fill="#FBC507"/><path d="M-16.7 -105.7A107 107 0 0 1 16.7 -105.7L15.5 -97.8A99 99 0 0 0 -15.5 -97.8ZM-26.6 -167.9A170 170 0 0 1 26.6 -167.9L25.3 -160.0A162 162 0 0 0 -25.3 -160.0ZM48.6 -95.3A107 107 0 0 1 75.7 -75.7L70.0 -70.0A99 99 0 0 0 44.9 -88.2ZM77.2 -151.5A170 170 0 0 1 120.2 -120.2L114.6 -114.6A162 162 0 0 0 73.5 -144.3ZM95.3 -48.6A107 107 0 0 1 105.7 -16.7L97.8 -15.5A99 99 0 0 0 88.2 -44.9ZM151.5 -77.2A170 170 0 0 1 167.9 -26.6L160.0 -25.3A162 162 0 0 0 144.3 -73.5ZM105.7 16.7A107 107 0 0 1 95.3 48.6L88.2 44.9A99 99 0 0 0 97.8 15.5ZM167.9 26.6A170 170 0 0 1 151.5 77.2L144.3 73.5A162 162 0 0 0 160.0 25.3ZM75.7 75.7A107 107 0 0 1 48.6 95.3L44.9 88.2A99 99 0 0 0 70.0 70.0ZM120.2 120.2A170 170 0 0 1 77.2 151.5L73.5 144.3A162 162 0 0 0 114.6 114.6ZM16.7 105.7A107 107 0 0 1 -16.7 105.7L-15.5 97.8A99 99 0 0 0 15.5 97.8ZM26.6 167.9A170 170 0 0 1 -26.6 167.9L-25.3 160.0A162 162 0 0 0 25.3 160.0ZM-48.6 95.3A107 107 0 0 1 -75.7 75.7L-70.0 70.0A99 99 0 0 0 -44.9 88.2ZM-77.2 151.5A170 170 0 0 1 -120.2 120.2L-114.6 114.6A162 162 0 0 0 -73.5 144.3ZM-95.3 48.6A107 107 0 0 1 -105.7 16.7L-97.8 15.5A99 99 0 0 0 -88.2 44.9ZM-151.5 77.2A170 170 0 0 1 -167.9 26.6L-160.0 25.3A162 162 0 0 0 -144.3 73.5ZM-105.7 -16.7A107 107 0 0 1 -95.3 -48.6L-88.2 -44.9A99 99 0 0 0 -97.8 -15.5ZM-167.9 -26.6A170 170 0 0 1 -151.5 -77.2L-144.3 -73.5A162 162 0 0 0 -160.0 -25.3ZM-75.7 -75.7A107 107 0 0 1 -48.6 -95.3L-44.9 -88.2A99 99 0 0 0 -70.0 -70.0ZM-120.2 -120.2A170 170 0 0 1 -77.2 -151.5L-73.5 -144.3A162 162 0 0 0 -114.6 -114.6Z" fill="#023FA5"/><circle r="16" fill="#FBC507"/><circle r="6.4" fill="#023FA5"/><g fill="none" stroke="#3F37FF" stroke-width="2"><path d="M-2.5 -15.8L-26.6 -167.9M2.5 -15.8L26.6 -167.9M7.3 -14.3L77.2 -151.5M11.3 -11.3L120.2 -120.2M14.3 -7.3L151.5 -77.2M15.8 -2.5L167.9 -26.6M15.8 2.5L167.9 26.6M14.3 7.3L151.5 77.2M11.3 11.3L120.2 120.2M7.3 14.3L77.2 151.5M2.5 15.8L26.6 167.9M-2.5 15.8L-26.6 167.9M-7.3 14.3L-77.2 151.5M-11.3 11.3L-120.2 120.2M-14.3 7.3L-151.5 77.2M-15.8 2.5L-167.9 26.6M-15.8 -2.5L-167.9 -26.6M-14.3 -7.3L-151.5 -77.2M-11.3 -11.3L-120.2 -120.2M-7.3 -14.3L-77.2 -151.5"/><circle r="16"/><circle r="99"/><circle r="107"/><circle r="162"/><circle r="170"/></g></g><circle class="hb-hit" r="16" fill="none" stroke="#FBC507" stroke-width="3"/><g class="hb-dart"><g transform="rotate(18) scale(1.25)" fill="#ECEDDF" stroke="#3F37FF" stroke-width="3" stroke-linejoin="round"><path d="M-3 0L-34 -2.6L-34 2.6Z"/><path d="M-150 0L-118 -4L-160 -34L-196 -34L-182 -4L-182 4L-196 34L-160 34L-118 4Z"/><rect x="-122" y="-3.2" width="48" height="6.4" rx="3"/><rect x="-80" y="-7.5" width="50" height="15" rx="6"/><g stroke="none" fill="#3F37FF"><rect x="-72" y="-8" width="3" height="16"/><rect x="-64" y="-8" width="3" height="16"/><rect x="-56" y="-8" width="3" height="16"/><rect x="-48" y="-8" width="3" height="16"/></g></g></g></g></svg>';
+var HERO_T0=Date.now();
+/* Animationen laufen beim Neuzeichnen mit negativer Verzögerung weiter, statt neu zu starten. */
+function heroSvg(){var d='style="animation-delay:-'+((Date.now()-HERO_T0)/1000).toFixed(2)+'s"';return HERO_SVG.replace('class="hb-spin"','class="hb-spin" '+d).replace('class="hb-dart"','class="hb-dart" '+d).replace('class="hb-hit"','class="hb-hit" '+d);}
 
 function defaultSetup(){return{lineup:[{name:'Spieler 1'},{name:'Spieler 2'}],type:'x01',opts:{x01:{start:501,inMode:'straight',outMode:'double',legs:1},cricket:{mode:'standard'},atc:{multi:false,end:'bull'},shanghai:{rounds:7},killer:{lives:3},highscore:{rounds:7},split:{start:40}}};}
 function splitSeq(o){return(o.start==='free'?['free']:[]).concat([15,16,'D',17,18,'T',19,20,'B']);}
@@ -746,13 +815,13 @@ var H={
     var ok=v>0&&(t==='free'||(t==='D'&&d.m===2)||(t==='T'&&d.m===3)||(t==='B'&&d.s===25)||d.s===t);
     if(ok){p.score+=v;G.turnPts+=v;G.splitHit=true;}
     if(G.darts.length===3){
-      if(!G.splitHit&&t!=='free'){p.score=Math.floor(p.score/2);toast(p.name+': halbiert',true);endTurn('Halbiert');}
+      if(!G.splitHit&&t!=='free'){var was=p.score;p.score=Math.floor(p.score/2);fxHalf(p.name,was,p.score);endTurn('Halbiert');}
       else endTurn();
     }
   },
   killer:function(d){
     var p=cur();G.darts.push(d);p.dartsTotal++;
-    function hit(q){q.lives--;if(q.lives<=0){q.lives=0;q.out=true;toast(q.name+' ist raus');}else toast(q.name+' verliert ein Leben');}
+    function hit(q){q.lives--;if(q.lives<=0){q.lives=0;q.out=true;fxOut(q.name);}else toast(q.name+' verliert ein Leben');}
     if(d.m===2&&d.s>=1&&d.s<=20){
       if(d.s===p.num){if(!p.killer){p.killer=true;toast(p.name+' ist Killer');}else hit(p);}
       else if(p.killer){var q=G.players.filter(function(x){return x.num===d.s&&!x.out;})[0];if(q)hit(q);}
@@ -762,6 +831,21 @@ var H={
     if(p.out||G.darts.length===3)endTurn();
   }
 };
+var FX_RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function playFx(cls,html,ms){
+  var el=document.createElement('div');el.className='fx '+cls;el.setAttribute('role','status');el.innerHTML=html;
+  el.addEventListener('click',function(){el.remove();});document.body.appendChild(el);
+  setTimeout(function(){el.remove();},ms);
+}
+function fxHalf(name,from,to){
+  if(FX_RM){toast(name+': halbiert',true);return;}
+  var len=String(from).length,fs='min('+(84/(Math.max(len,1)*0.9)).toFixed(1)+'vw,'+Math.round(560/Math.max(len,1))+'px)';
+  playFx('half','<div class="fx-name">'+esc(name)+'</div><div class="fx-stack" style="font-size:'+fs+'"><span class="fx-h l">'+from+'</span><span class="fx-h r">'+from+'</span><span class="fx-cut"></span><span class="fx-new">'+to+'</span></div><div class="fx-sub">Halbiert</div>',2600);
+}
+function fxOut(name){
+  if(FX_RM){toast(name+' ist raus');return;}
+  playFx('out','<div class="fx-name">'+esc(name)+'</div><div class="fx-big">Raus.</div>',2200);
+}
 function throwDart(s,m){
   if(!G||G.over)return;
   if(s===25&&m===3)return;
@@ -772,6 +856,7 @@ function throwDart(s,m){
 }
 function undo(){
   if(!undoStack.length)return;
+  ui.endPlayed=null;
   var wasOver=G&&G.over,mid=G&&G.matchId;
   G=JSON.parse(undoStack.pop());ui.mult=1;ui.toast=null;
   if(wasOver&&!G.over&&mid)removeMatch(mid);
@@ -799,7 +884,7 @@ function gameSub(){
     case'atc':return(o.end==='bull'?'1 bis 20 und Bull':'1 bis 20')+(o.multi?', D/T springen':'');
     case'shanghai':return'Runde '+G.round+' von '+o.rounds+', Ziel: '+G.round;
     case'highscore':return'Runde '+G.round+' von '+o.rounds;
-    case'split':return'Runde '+G.round+' von '+o.rounds+', Ziel: '+splitLabel(splitSeq(o)[G.round-1]);
+    case'split':return'Runde '+G.round+' von '+o.rounds;
     case'killer':var al=G.players.filter(function(p){return !p.out;}).length;return al+' von '+G.players.length+' im Spiel';
   }return'';
 }
@@ -858,15 +943,20 @@ function boardAtc(){
       '<div class="pstats"><span>Darts <b>'+p.dartsTotal+'</b></span>'+lastLine(p)+'</div></div>';
   }).join(''));
 }
+function splitStrip(){
+  var seq=splitSeq(G.opts),h='<div class="sp-seq" aria-label="Runden">';
+  seq.forEach(function(t,i){var c=i<G.round-1?'done':i===G.round-1?'on':'';h+='<span class="'+c+'">'+(t==='free'?'Frei':t==='B'?'Bull':t)+'</span>';});
+  return h+'</div>';
+}
 function boardScore(){
-  var mx=Math.max.apply(null,G.players.map(function(p){return p.score;}));
-  return cardsWrap(G.players.map(function(p,i){
+  var mx=Math.max.apply(null,G.players.map(function(p){return p.score;})),nmx=G.players.filter(function(p){return p.score===mx;}).length,sp=G.type==='split';
+  return(sp?splitStrip():'')+cardsWrap(G.players.map(function(p,i){
     var active=i===G.cur&&!G.over;
-    var lead=G.players.length>1&&p.score===mx&&mx>0?'<span class="badge hot">Führt</span>':'';
+    var lead=G.players.length>1&&nmx===1&&p.score===mx&&mx>0?'<span class="badge hot">Führt</span>':'';
     var avg=p.dartsTotal?(p.score/p.dartsTotal*3).toFixed(1):'–';
     return'<div class="pcard'+(active?' active':'')+'"><div class="pc-head">'+pnameH(p)+''+lead+'</div>'+
       '<div class="pscore">'+p.score+'</div>'+
-      '<div class="pstats"><span>Ø <b>'+avg+'</b></span>'+lastLine(p)+'</div></div>';
+      '<div class="pstats">'+(sp?'':'<span>Ø <b>'+avg+'</b></span>')+lastLine(p)+'</div></div>';
   }).join(''));
 }
 function boardKiller(){
@@ -895,6 +985,22 @@ function hint(n){
   }
   return'';
 }
+function renderSplitPad(p,t,slots){
+  var h='<div class="pad sp"><div class="turn"><div class="tname">'+avatarP(p,'sm')+'<span>'+esc(p.name)+'</span></div><div class="slots">'+slots+'</div><div class="tsum">'+G.turnPts+'</div></div>';
+  h+='<div class="sp-goal"><small>Ziel</small><b>'+esc(splitLabel(t))+'</b><span>'+(G.splitHit?'Getroffen, kein Halbieren':'Noch kein Treffer')+'</span></div>';
+  function big(s,m,a,b,cls){return'<button class="k big '+cls+'" data-action="dart" data-s="'+s+'" data-m="'+m+'"><small>'+a+'</small><b>'+b+'</b></button>';}
+  if(typeof t==='number')h+='<div class="sp3">'+big(t,1,'Single',t,'')+big(t,2,'Double',t*2,'d')+big(t,3,'Triple',t*3,'t')+'</div>';
+  else if(t==='B')h+='<div class="sp3 two">'+big(25,1,'Bull',25,'')+big(25,2,'Bullseye',50,'d')+'</div>';
+  else{
+    var m=t==='D'?2:3;h+='<div class="nums m'+m+'">';
+    for(var n=1;n<=20;n++)h+='<button class="k" data-action="dart" data-s="'+n+'" data-m="'+m+'" aria-label="'+(m===2?'Double ':'Triple ')+n+'">'+n+'</button>';
+    h+='</div>';
+  }
+  h+='<div class="bottom sp-b">'+(t==='D'?'<button class="k wide d" data-action="dart" data-s="25" data-m="2">Bull 50</button>':'')+
+     '<button class="k wide miss" data-action="miss">Daneben</button>'+
+     '<button class="k wide" data-action="undo"'+(undoStack.length?'':' disabled')+' aria-label="Letzten Dart zurücknehmen">↶</button></div></div>';
+  return h;
+}
 function renderPad(){
   var p=cur(),slots='';
   for(var i=0;i<3;i++){var d=G.darts[i];slots+=d?'<div class="slot">'+dlabel(d)+'</div>':'<div class="slot empty"></div>';}
@@ -902,6 +1008,7 @@ function renderPad(){
   if(G.type==='x01')sum=p.turnPoints;
   else if(G.type==='cricket')sum=G.turnMarks?G.turnMarks+'M':'';
   else if(G.type==='shanghai'||G.type==='highscore'||G.type==='split')sum=G.turnPts;
+  if(G.type==='split'&&!G.over){var st=splitSeq(G.opts)[G.round-1];if(st!=='free')return renderSplitPad(p,st,slots);}
   var h='<div class="pad"><div class="turn"><div class="tname">'+avatarP(p,'sm')+'<span>'+esc(p.name)+'</span></div><div class="slots">'+slots+'</div><div class="tsum">'+sum+'</div></div>';
   h+='<div class="mods"><button class="mod d'+(ui.mult===2?' on':'')+'" data-action="mult" data-m="2" aria-pressed="'+(ui.mult===2)+'">Double</button>'+
      '<button class="mod t'+(ui.mult===3?' on':'')+'" data-action="mult" data-m="3" aria-pressed="'+(ui.mult===3)+'">Triple</button></div>';
@@ -912,11 +1019,21 @@ function renderPad(){
      '<button class="k wide" data-action="undo"'+(undoStack.length?'':' disabled')+' aria-label="Letzten Dart zurücknehmen">↶</button></div></div>';
   return h;
 }
+function confetti(){
+  var cs=['#3F37FF','#ED292A','#240D57','#ED40B5','#FFFFFF','#023FA5'],h='<div class="confetti" aria-hidden="true">';
+  for(var i=0;i<64;i++){var r=Math.random;
+    h+='<i style="--x:'+(r()*100).toFixed(1)+'vw;--dx:'+((r()-.5)*30).toFixed(1)+'vw;--r:'+Math.round((r()-.5)*1440)+'deg;--d:'+(2.2+r()*1.8).toFixed(2)+'s;--dl:'+(r()*.7).toFixed(2)+'s;--s:'+Math.round(8+r()*10)+'px;--c:'+cs[i%cs.length]+'"></i>';}
+  return h+'</div>';
+}
 function renderModal(){
-  var r=G.result,ws=r.winners,h='<div class="overlay"><div class="ht" aria-hidden="true"></div><div class="modal" role="dialog" aria-modal="true">';
+  var anim=ui.endPlayed!==G.matchId;ui.endPlayed=G.matchId;
+  var late=anim&&document.querySelector('.fx')?' style="--late:2.2s"':'';
+  var r=G.result,ws=r.winners,h='<div class="overlay'+(anim?' anim':'')+'"'+late+'><div class="ht" aria-hidden="true"></div>'+(anim&&!FX_RM?confetti():'')+'<div class="modal" role="dialog" aria-modal="true">';
   var htxt=(r.title?r.title+' ':'')+(ws.length>1?'Unentschieden.':ws[0]+' gewinnt.');var mw=Math.max.apply(null,htxt.split(/\s+/).map(function(w){return w.length;}));
   h+='<h3 style="font-size:min(76px,calc(min(88vw,520px) / '+(Math.max(mw,6)*0.86).toFixed(2)+'))">'+(r.title?esc(r.title)+'<br>':'')+(ws.length>1?'Unentschieden.':esc(ws[0])+'<br>gewinnt.')+'</h3>';
   if(ws.length>1)h+='<p>'+esc(ws.join(' und '))+'</p>';
+  var losers=G.players.filter(function(p){return ws.indexOf(p.name)<0;}).map(function(p){return p.name;});
+  if(losers.length&&G.players.length>1)h+='<p class="loser"><span>'+esc(losers.join(', '))+(losers.length>1?' verlieren.':' verliert.')+'</span></p>';
   var head,rows;
   var isW=function(p){return ws.indexOf(p.name)>=0;};
   if(G.type==='x01'){
@@ -929,21 +1046,26 @@ function renderModal(){
   }else if(G.type==='killer'){
     head=['Spieler','Zahl','Leben'];rows=G.players.map(function(p){return[p.name,p.num,p.lives];});
   }else{
-    head=['Spieler','Punkte','Ø'];rows=G.players.map(function(p){return[p.name,p.score,p.dartsTotal?(p.score/p.dartsTotal*3).toFixed(1):'–'];});
+    if(G.type==='split'){head=['Spieler','Punkte'];rows=G.players.map(function(p){return[p.name,p.score];});}
+    else{head=['Spieler','Punkte','Ø'];rows=G.players.map(function(p){return[p.name,p.score,p.dartsTotal?(p.score/p.dartsTotal*3).toFixed(1):'–'];});}
   }
   h+='<table class="st"><thead><tr>'+head.map(function(x){return'<th>'+x+'</th>';}).join('')+'</tr></thead><tbody>';
-  rows.forEach(function(r,i){h+='<tr class="'+(isW(G.players[i])?'win':'')+'">'+r.map(function(x){return'<td>'+esc(x)+'</td>';}).join('')+'</tr>';});
+  rows.forEach(function(r,i){h+='<tr class="'+(isW(G.players[i])?'win':G.players.length>1?'lose':'')+'" style="--i:'+i+'">'+r.map(function(x){return'<td>'+esc(x)+'</td>';}).join('')+'</tr>';});
   h+='</tbody></table><div class="mbtns"><button class="btn primary" data-action="rematch">Revanche</button><button class="btn" data-action="newgame">Neues Spiel</button>'+(G.players.some(function(p){return p.pid;})?'<button class="btn" data-action="stats">Statistik ansehen</button>':'')+'<button class="btn" data-action="undo">Letzten Dart zurücknehmen</button></div></div></div>';
   return h;
 }
 function renderGame(){
   var b;
   switch(G.type){case'x01':b=boardX01();break;case'cricket':b=boardCricket();break;case'atc':b=boardAtc();break;case'killer':b=boardKiller();break;default:b=boardScore();}
-  var h='<div class="game"><div class="topbar"><button class="tb" data-action="menu">Menü</button><div class="title"><b>'+esc(gameTitle(G))+'</b><small>'+esc(gameSub())+'</small></div>'+
+  var h='<div class="game"><div class="topbar"><button class="tb" data-action="sheet">Menü</button><div class="title"><b>'+esc(gameTitle(G))+'</b><small>'+esc(gameSub())+'</small></div>'+
     '<button class="tb" data-action="undo"'+(undoStack.length?'':' disabled')+' aria-label="Rückgängig">↶</button></div>'+
     '<div class="main"><div class="board">'+b+'</div>'+renderPad()+'</div></div>';
   if(ui.toast)h+='<div class="toast'+(ui.bust?' bust':'')+'" role="status">'+esc(ui.toast)+'</div>';
   if(G.over)h+=renderModal();
+  else if(ui.sheet)h+='<div class="sheet-bg" data-action="sheetclose"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Spielmenü"><h2>'+esc(gameTitle(G))+'</h2>'+
+    '<button class="btn primary" data-action="sheetclose">Weiterspielen</button>'+
+    '<button class="btn" data-action="menu">Zum Hauptmenü</button><p class="hint">Das Spiel bleibt offen und lässt sich dort fortsetzen.</p>'+
+    '<button class="btn danger" data-action="abort">'+(ui.confirmAbort?'Wirklich abbrechen? Nochmal tippen':'Spiel abbrechen')+'</button>'+(ui.confirmAbort?'<p class="hint">Der Spielstand wird verworfen und nicht in die Statistik übernommen.</p>':'')+'</div>';
   return h;
 }
 function seg(type,key,label,choices){
@@ -960,7 +1082,7 @@ function cleanLineup(){
 function navTabs(){return'<nav class="tabs"><button class="'+(ui.tab==='play'?'on':'')+'" data-action="tab" data-val="play">Spielen</button><button class="'+(ui.tab==='profiles'?'on':'')+'" data-action="tab" data-val="profiles">Profile &amp; Statistik</button></nav>';}
 function renderSetup(){
   var t=setup.type,h='<div class="setup"><div class="setup-inner">';
-  h+='<header class="hero art"><h1 class="sr-only">Dart-Zähler</h1>'+HERO_SVG+'</header>';
+  h+='<header class="hero art"><h1 class="sr-only">Dart-Zähler</h1>'+heroSvg()+'</header>';
   if(G&&!G.over)h+='<div class="resume"><div><b>Laufendes Spiel: '+esc(gameTitle(G))+'</b><small>'+esc(G.players.map(function(p){return p.name;}).join(', '))+'</small></div><button class="btn primary" data-action="resume">Fortsetzen</button></div>';
   h+=navTabs();
   if(ui.tab==='profiles')return h+renderProfilesBody()+'</div></div>';
@@ -1148,7 +1270,11 @@ $app.addEventListener('click',function(e){
       if(setup.type==='killer'&&entries.length<2){ui.err='Killer braucht mindestens 2 Spieler.';render();return;}
       ui.err='';startGame(entries,setup.type,setup.opts[setup.type]);break;
     case'resume':ui.screen='game';render();requestWake();break;
-    case'menu':ui.screen='setup';ui.tab='play';ui.toast=null;render();break;
+    case'menu':ui.sheet=false;ui.confirmAbort=false;ui.screen='setup';ui.tab='play';ui.toast=null;render();break;
+    case'sheet':if(G&&!G.over){ui.sheet=true;ui.confirmAbort=false;render();}break;
+    case'sheetclose':ui.sheet=false;ui.confirmAbort=false;render();break;
+    case'abort':if(!ui.confirmAbort){ui.confirmAbort=true;render();break;}G=null;undoStack=[];ui.sheet=false;ui.confirmAbort=false;ui.screen='setup';ui.tab='play';ui.toast=null;save();render();break;
+    case'dart':throwDart(+b.getAttribute('data-s'),+b.getAttribute('data-m'));break;
     case'newgame':ui.screen='setup';ui.tab='play';ui.toast=null;render();break;
     case'stats':ui.screen='setup';ui.tab='profiles';ui.toast=null;render();break;
     case'rematch':var en=G.players.map(function(p){return{pid:p.pid||null,name:p.name};});if(en.length>1)en.push(en.shift());startGame(en,G.type,G.opts);break;

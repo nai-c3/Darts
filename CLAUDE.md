@@ -26,7 +26,10 @@ Steeldarts-Zähler als **eine einzige Datei**: `index.html` (HTML, CSS, JS inlin
 - Schrift: Display „PP Agrandir Grand Heavy“ (lizenzpflichtig, nur lokal), Fallback Unbounded 800, Versalien, Laufweite −0,05em. Fließtext Young Serif Light (OFL, als Base64 eingebettet).
 - Keine Schatten, Verläufe, Rahmen um Text oder Emojis. Farbflächen eckig, Bedienelemente Radius 12px, Badges 8px, Avatare rund.
 - Raster: Abstände 4/8/12/16/20/24/32px; Schriftgrößen 11/13/15/17/19/24/30/44px plus clamp-Werte für große Zahlen.
-- Header: nur Illustration ohne sichtbaren Text (Dartscheibe mit Pfeil im Bull, dreht langsam, respektiert prefers-reduced-motion); Titel als `.sr-only`-h1.
+- Header: nur Illustration ohne sichtbaren Text; Titel als `.sr-only`-h1. Scheibe dreht (48 s pro Umdrehung), Pfeil fliegt alle 7 s ein mit Treffer-Ring. Weil `render()` den Header neu zeichnet, setzt `heroSvg()` eine negative `animation-delay` seit Seitenstart, damit nichts neu beginnt.
+- Animationen: Halbieren (Split Score) und „Raus“ (Killer) als Vollbild-Effekt über `playFx()` außerhalb von `#app` (überlebt `render()`, Antippen schließt). Spielende: Konfetti, Sieger-Headline, Verlierer-Zeile „X verliert.“ schwingt, Verlierer-Zeilen sacken ab; nur beim ersten Anzeigen (`ui.endPlayed`), bei laufendem Effekt um `--late` verzögert. Alles respektiert prefers-reduced-motion (dann Toast statt Effekt).
+- Split Score: eigenes Tastenfeld je Ziel (Zahl: Single/Double/Triple als große Tasten; Doppel/Triple: 1–20 vorbelegt; Bull: 25/50; immer „Daneben“), Rundenleiste über den Karten, kein Average.
+- Spielmenü (Topbar „Menü“): Weiterspielen, Zum Hauptmenü (Spiel bleibt offen), Spiel abbrechen (zweistufig, verwirft ohne Statistik).
 - Markenentscheidungen im CSS sind mit `unslop-ignore` markiert.
 
 ## Offene Ideen (vom Nutzer noch nicht beauftragt)
