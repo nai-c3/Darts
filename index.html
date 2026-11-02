@@ -242,6 +242,9 @@ h2.sect{font-size:15px;margin:24px 20px 12px}
 label.btn{display:inline-block;cursor:pointer}
 .btn.danger{background:var(--signal);color:var(--white)}
 .delrow{padding:16px 20px}
+.hint.nomt{margin-top:0}
+.bmsg{margin-top:12px;padding:12px 16px;border-radius:8px;background:var(--sun);color:var(--midnight);font-size:15px;line-height:1.4}
+.bmsg.bad{background:var(--signal);color:var(--white)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -361,6 +364,57 @@ function putProfile(p){DS.profiles[p.id]=p;saveData();dbWrite(function(){return 
 function removeProfile(id){delete DS.profiles[id];saveData();dbWrite(function(){return DS.pc.doc(id).delete();});}
 function putMatch(m){var i=-1;DS.matches.forEach(function(x,j){if(x.id===m.id)i=j;});if(i>=0)DS.matches[i]=m;else DS.matches.push(m);saveData();dbWrite(function(){return DS.mc.doc(m.id).set(m);});}
 function removeMatch(id){DS.matches=DS.matches.filter(function(m){return m.id!==id;});saveData();dbWrite(function(){return DS.mc.doc(id).delete();});}
+/* ---------- Sichern: Export / Import ---------- */
+var BKEY='dartzaehler-backup-v1';
+function nP(n,one,many){return n+' '+(n===1?one:many);}
+function lastBackup(){try{return +localStorage.getItem(BKEY)||0;}catch(e){return 0;}}
+function exportData(){
+  var now=Date.now(),d=new Date(now),pad=function(n){return(n<10?'0':'')+n;};
+  var json=JSON.stringify({app:'dartzaehler',v:1,exported:now,profiles:DS.profiles,matches:DS.matches});
+  var url=URL.createObjectURL(new Blob([json],{type:'application/json'})),a=document.createElement('a');
+  a.href=url;a.download='dartzaehler-'+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},4000);
+  try{localStorage.setItem(BKEY,String(now));}catch(e){}
+  return{ok:true,text:'Gesichert: '+nP(profList().length,'Profil','Profile')+', '+nP(DS.matches.length,'Spiel','Spiele')+'. Die Datei liegt in deinen Downloads.'};
+}
+function cleanProfile(p,k){
+  if(!p||typeof p!=='object'||typeof p.name!=='string'||!p.name.trim())return null;
+  var id=typeof p.id==='string'&&p.id?p.id:k;if(typeof id!=='string'||!id)return null;
+  var ph=typeof p.photo==='string'&&/^[0-9a-z]+$/.test(p.photo)&&p.photo.length<=1600&&Math.pow(Math.round(Math.sqrt(p.photo.length)),2)===p.photo.length?p.photo:null;
+  return{id:id,name:p.name.trim().slice(0,40),color:COLORS[p.color]?p.color:'ultramarine',photo:ph,created:isFinite(p.created)?+p.created:Date.now()};
+}
+var NUMF=['darts','pts','best','finish','n180','n100','legs','marks','points','lives','score'];
+function cleanMatch(m){
+  if(!m||typeof m!=='object'||typeof m.id!=='string'||!m.id||!GAMES[m.type]||!isFinite(m.at)||!Array.isArray(m.players)||!m.players.length)return null;
+  var ps=[];
+  for(var i=0;i<m.players.length;i++){var p=m.players[i];if(!p||typeof p.name!=='string')return null;
+    var r={pid:typeof p.pid==='string'&&p.pid?p.pid:null,name:p.name.slice(0,40),won:p.won===true};
+    NUMF.forEach(function(f){if(p[f]!==undefined&&p[f]!==null&&isFinite(p[f]))r[f]=+p[f];});
+    ps.push(r);}
+  return{id:m.id,at:+m.at,type:m.type,title:typeof m.title==='string'?m.title.slice(0,80):GAMES[m.type].name,players:ps};
+}
+function importData(text){
+  var d;try{d=JSON.parse(text);}catch(e){return{ok:false,text:'Die Datei ist keine gültige Sicherung (kein JSON).'};}
+  if(!d||d.app!=='dartzaehler'||typeof d.profiles!=='object'||!Array.isArray(d.matches))return{ok:false,text:'Die Datei ist keine Sicherung des Dart-Zählers.'};
+  if(+d.v>1)return{ok:false,text:'Die Sicherung stammt aus einer neueren Version. Lade die Seite neu und versuch es noch einmal.'};
+  var np=0,nm=0,skip=0,newP=[],newM=[];
+  Object.keys(d.profiles||{}).forEach(function(k){var p=cleanProfile(d.profiles[k],k);if(!p){skip++;return;}if(!DS.profiles[p.id]){newP.push(p);np++;}});
+  var have={};DS.matches.forEach(function(m){have[m.id]=1;});
+  d.matches.forEach(function(x){var m=cleanMatch(x);if(!m){skip++;return;}if(!have[m.id]){have[m.id]=1;newM.push(m);nm++;}});
+  newP.forEach(function(p){DS.profiles[p.id]=p;dbWrite(function(){return DS.pc.doc(p.id).set(p);});});
+  newM.forEach(function(m){DS.matches.push(m);dbWrite(function(){return DS.mc.doc(m.id).set(m);});});
+  saveData();
+  if(!np&&!nm)return{ok:true,text:'Nichts Neues: Alle Profile und Spiele aus der Datei sind schon vorhanden.'+(skip?' '+nP(skip,'fehlerhafter Eintrag','fehlerhafte Einträge')+' übersprungen.':'')};
+  return{ok:true,text:'Importiert: '+nP(np,'neues Profil','neue Profile')+', '+nP(nm,'neues Spiel','neue Spiele')+'.'+(skip?' '+nP(skip,'fehlerhafter Eintrag','fehlerhafte Einträge')+' übersprungen.':'')};
+}
+function renderBackupPanel(){
+  var lb=lastBackup(),h='<section class="panel"><h2>Daten sichern</h2>';
+  h+='<p class="hint nomt">'+(DS.mode==='db'?'Deine Daten liegen schon im Claude-Konto. Eine Datei brauchst du nur, um sie in die GitHub-Version mitzunehmen.':'Leert der Browser seine Daten, sind Profile und Statistik weg. Sichere sie ab und zu als Datei, auch um sie auf ein anderes Gerät mitzunehmen.')+'</p>';
+  h+='<div class="btnrow"><button class="btn primary" data-action="export"'+(profList().length||DS.matches.length?'':' disabled')+'>Exportieren</button><label class="btn">Importieren<input type="file" accept="application/json,.json" data-edit="import" hidden></label></div>';
+  if(ui.bmsg)h+='<p class="bmsg'+(ui.bmsg.ok?'':' bad')+'" role="status">'+esc(ui.bmsg.text)+'</p>';
+  h+='<p class="note">'+(lb?'Zuletzt gesichert am '+fmtDate(lb)+'.':'Noch nie gesichert.')+' Beim Import kommen nur neue Profile und Spiele dazu, Vorhandenes bleibt unverändert.</p>';
+  return h+'</section>';
+}
 function initDb(){
   if(!window.claude||typeof window.claude.use!=='function')return;
   Promise.all([window.claude.use('db'),window.claude.use('user')]).then(function(r){
@@ -856,7 +910,7 @@ function renderProfilesBody(){
   h+='<p class="note">'+(DS.mode==='db'?'Profile und Statistiken liegen in deinem Claude-Konto, nur für dich sichtbar, auf jedem Gerät.':'Profile und Statistiken liegen nur in diesem Browser auf diesem Gerät.')+'</p></section>';
   var recent=DS.matches.slice().sort(function(a,b){return b.at-a.at;}).slice(0,12);
   if(recent.length)h+='<section class="panel"><h2>Letzte Spiele</h2>'+recent.map(function(m){return matchRow(m);}).join('')+'</section>';
-  return h;
+  return h+renderBackupPanel();
 }
 function renderProfile(){
   var p=DS.profiles[ui.pid];
@@ -940,6 +994,14 @@ $app.addEventListener('input',function(e){
 });
 $app.addEventListener('change',function(e){
   var t=e.target;
+  if(t.getAttribute('data-edit')==='import'&&t.files&&t.files[0]){
+    var f=t.files[0];t.value='';
+    if(f.size>20*1024*1024){ui.bmsg={ok:false,text:'Die Datei ist zu groß für eine Sicherung.'};render();return;}
+    var rd=new FileReader();
+    rd.onload=function(){ui.bmsg=importData(String(rd.result||''));render();};
+    rd.onerror=function(){ui.bmsg={ok:false,text:'Die Datei konnte nicht gelesen werden.'};render();};
+    rd.readAsText(f);return;
+  }
   if(t.getAttribute('data-edit')==='photo'&&t.files&&t.files[0]&&ui.edit){
     processPhoto(t.files[0],function(out){if(!ui.edit)return;if(out){ui.edit.photo=out;ui.err='';}else ui.err='Das Bild konnte nicht gelesen werden. Versuch ein JPG oder PNG.';render();});
   }
@@ -949,7 +1011,8 @@ $app.addEventListener('click',function(e){
   var b=e.target.closest('[data-action]');if(!b||b.disabled)return;
   var a=b.getAttribute('data-action'),lu=setup.lineup,ix=+b.getAttribute('data-idx');
   switch(a){
-    case'tab':ui.tab=b.getAttribute('data-val');ui.err='';render();break;
+    case'tab':ui.tab=b.getAttribute('data-val');ui.err='';ui.bmsg=null;render();break;
+    case'export':try{ui.bmsg=exportData();}catch(er){ui.bmsg={ok:false,text:'Export nicht möglich: Dieser Browser blockiert Downloads.'};}render();break;
     case'add':if(lu.length<8){lu.push({name:'Gast '+(lu.filter(function(x){return !x.pid;}).length+1)});save();render();var ins=$app.querySelectorAll('.prow input');var last=ins[ins.length-1];if(last){last.focus();last.select();}}break;
     case'addp':if(lu.length<8){lu.push({pid:b.getAttribute('data-pid')});save();render();}break;
     case'up':if(ix>0){var t=lu[ix];lu[ix]=lu[ix-1];lu[ix-1]=t;save();render();}break;
