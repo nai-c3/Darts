@@ -1,6 +1,6 @@
 # Dart-Zähler – Kontext für Claude Code
 
-Steeldarts-Zähler als **eine einzige Datei**: `index.html` (HTML, CSS, JS inline, kein Build, keine Abhängigkeiten außer Google Fonts „Unbounded“). Veröffentlicht über GitHub Pages aus `main` / root. Zuvor in claude.ai entstanden und dort zusätzlich als Artefakt gehostet.
+Steeldarts-Zähler als **eine einzige Datei**: `index.html` (HTML, CSS, JS inline, kein Build, keine Abhängigkeiten außer Google Fonts „Unbounded“). Daneben nur App-Icons und Manifest: `apple-touch-icon.png` (180 px, iOS-Home-Bildschirm, ohne Transparenz), `icon-512.png`, `favicon.svg`, `manifest.webmanifest` (Name „Darts“, standalone). Das Icon ist die Header-Scheibe mit Pfeil auf ultramarine; Quelle ist das SVG, PNGs per Chromium daraus gerendert. Veröffentlicht über GitHub Pages aus `main` / root. Zuvor in claude.ai entstanden und dort zusätzlich als Artefakt gehostet.
 
 ## Arbeitsweise mit dem Nutzer
 - Antworten auf Deutsch. Rolle: Berater, nicht Assistent. Schwächen und Risiken zuerst nennen, keine Floskeln oder Lob.
